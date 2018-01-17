@@ -5,21 +5,22 @@ The example below trains a classifier on the iris dataset with 90 (30 each
 class) samples for training and 60 (20 each class) for testing.
 
 #+BEGIN_SRC emacs-lisp :exports both
-(require 'esvm)
+  (require 'esvm)
 
-;; Sets the variables x-train, y-train, x-test and y-test
-(load-file "./example.el")
+  ;; Sets the variables x-train, y-train, x-test and y-test
+  (load-file "./example.el")
 
-(defun accuracy (y-true y-pred)
-  "Return accuracy of prediction"
-  (let ((matches (mapcar* #'= y-true y-pred)))
-    (/ (length (cl-remove-if (lambda (x) (null x)) matches))
-       (* 1.0 (length matches)))))
+  (defun accuracy (y-true y-pred)
+    "Return accuracy of prediction"
+    (let ((matches (mapcar* #'= y-true y-pred)))
+      (/ (length (cl-remove-if (lambda (x) (null x)) matches))
+         (* 0.01 (length matches)))))
 
-(let ((predictions (esvm-fit-predict x-train y-train x-test)))
-  (accuracy y-test predictions))
+  (let* ((model (esvm-fit x-train y-train))
+         (predictions (esvm-predict model x-test)))
+    (format "Prediction accuracy: %f%%" (accuracy y-test predictions)))
 #+END_SRC
 
 #+RESULTS:
-: 0.9666666666666667
+: Prediction accuracy: 96.666667%
 

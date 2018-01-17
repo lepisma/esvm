@@ -42,24 +42,25 @@ make_vector (emacs_env *env, int len, double init)
   return env->funcall(env, Fmake_vector, 2, args);
 }
 
+static void
+fin_model (void *model)
+{
+  // TODO: Free model memory
+}
+
 static emacs_value
-Fgo (emacs_env *env, ptrdiff_t n, emacs_value args[], void *data)
+Ffit (emacs_env *env, ptrdiff_t n, emacs_value args[], void *data)
 {
   struct svm_parameter parameters;
   struct svm_problem problem;
   struct svm_model *model;
   struct svm_node *train_nodes;
-  struct svm_node *test_nodes;
 
   emacs_value x_train = args[0];
   emacs_value y_train = args[1];
-  emacs_value x_test = args[2];
 
   int train_size = env->vec_size(env, x_train);
-  int test_size = env->vec_size(env, x_test);
   int n_features = env->vec_size(env, vref(env, x_train, 0));
-
-  emacs_value y_out = make_vector(env, test_size, 0.0);
 
   problem.l = train_size;
   problem.y = malloc(train_size * sizeof(double));
@@ -102,10 +103,23 @@ Fgo (emacs_env *env, ptrdiff_t n, emacs_value args[], void *data)
   parameters.weight = NULL;
 
   model = svm_train(&problem, &parameters);
+  return env->make_user_ptr(env, fin_model, model);
+}
+
+static emacs_value
+Fpredict (emacs_env *env, ptrdiff_t n, emacs_value args[], void *data)
+{
+  struct svm_model *model = env->get_user_ptr(env, args[0]);
+
+  emacs_value x_test = args[1];
+  int test_size = env->vec_size(env, x_test);
+  int n_features = env->vec_size(env, vref(env, x_test, 0));
+
+  emacs_value y_out = make_vector(env, test_size, 0.0);
 
   // Predict
-  j = 0;
-  test_nodes = malloc((n_features + 1) * sizeof(struct svm_node));
+  int j = 0;
+  struct svm_node *test_nodes = malloc((n_features + 1) * sizeof(struct svm_node));
   for (int i = 0; i < test_size; i++)
     {
       for (j = 0; j < n_features; j++)
@@ -148,8 +162,11 @@ emacs_module_init (struct emacs_runtime *ert)
   emacs_value vfun = env->make_function(env, 0, 0, Flibsvm_version, "Return the version of libsvm", NULL);
   bind_function(env, "esvm--libsvm-version", vfun);
 
-  emacs_value gfun = env->make_function(env, 3, 3, Fgo, "Train and predict on the given data", NULL);
-  bind_function(env, "esvm--go", gfun);
+  emacs_value fitfun = env->make_function(env, 2, 2, Ffit, "Train on data and return model", NULL);
+  bind_function(env, "esvm--fit", fitfun);
+
+  emacs_value predictfun = env->make_function(env, 2, 2, Fpredict, "Return prediction for given model and data", NULL);
+  bind_function(env, "esvm--predict", predictfun);
 
   provide(env, "esvm-core");
 

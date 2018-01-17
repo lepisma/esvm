@@ -35,9 +35,13 @@
   "Return version information"
   (format "esvm using LibSVM version %s" (esvm--libsvm-version)))
 
-(defun esvm-fit-predict (x-train y-test x-test)
-  "Train on X-TRAIN, Y-TEST, X-TEST."
-  (esvm--go x-train y-test x-test))
+(defun esvm-fit (x-train y-train)
+  "Train a classifier on the given vectors of float and return a model"
+  (esvm--fit x-train y-train))
+
+(defun esvm-predict (model x-test)
+  "Return predictions from the MODEL for X-TEST"
+  (esvm--predict model x-test))
 
 (provide 'esvm)
 
