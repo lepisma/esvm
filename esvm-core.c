@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include "emacs-module.h"
-#include "svm.h"
+#include "libsvm/svm.h"
 
 int plugin_is_GPL_compatible;
 

@@ -12,10 +12,10 @@ esvm-core.o: esvm-core.c
 	gcc $(CFLAGS) -fPIC -c $< -o $@
 
 libsvm.a: libsvm.o
-	ar -cvq libsvm.a libsvm.o
+	ar -cvq $@ $<
 
 libsvm.so: libsvm.o
 	gcc -shared -o $@ $<
 
-libsvm.o: svm.cpp
+libsvm.o: libsvm/svm.cpp
 	gcc $(CFLAGS) -fPIC -c $< -o $@
