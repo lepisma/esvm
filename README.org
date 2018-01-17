@@ -1,11 +1,10 @@
 #+TITLE: esvm
 
 [[https://github.com/cjlin1/libsvm][Libsvm]] bindings for Emacs lisp. Learning to use dynamic modules in Emacs >=25.
-The example bellow trains a classifier on the iris dataset with 90 (30 each
+The example below trains a classifier on the iris dataset with 90 (30 each
 class) samples for training and 60 (20 each class) for testing.
 
-#+BEGIN_SRC emacs-lisp
-
+#+BEGIN_SRC emacs-lisp :exports both
 (require 'esvm)
 
 ;; Sets the variables x-train, y-train, x-test and y-test
@@ -19,7 +18,6 @@ class) samples for training and 60 (20 each class) for testing.
 
 (let ((predictions (esvm-fit-predict x-train y-train x-test)))
   (accuracy y-test predictions))
-
 #+END_SRC
 
 #+RESULTS:
