@@ -87,7 +87,7 @@ Fgo (emacs_env *env, ptrdiff_t n, emacs_value args[], void *data)
   parameters.svm_type = C_SVC;
   parameters.kernel_type = RBF;
   parameters.degree = 3;
-  parameters.gamma = 0.001;
+  parameters.gamma = 1.0 / n_features;
   parameters.coef0 = 0;
   parameters.nu = 0.5;
   parameters.cache_size = 100;
