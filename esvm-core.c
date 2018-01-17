@@ -35,6 +35,14 @@ vref2_f (emacs_env *env, emacs_value vec, int i, int j)
 }
 
 static emacs_value
+make_vector (emacs_env *env, int len, float init)
+{
+  emacs_value Fmake_vector = env->intern(env, "make-vector");
+  emacs_value args[] = { env->make_integer(env, len), env->make_float(env, init) };
+  return env->funcall(env, Fmake_vector, 2, args);
+}
+
+static emacs_value
 Fgo (emacs_env *env, ptrdiff_t n, emacs_value args[], void *data)
 {
   struct svm_parameter params;
@@ -45,15 +53,17 @@ Fgo (emacs_env *env, ptrdiff_t n, emacs_value args[], void *data)
   emacs_value x_train = args[0];
   emacs_value y_train = args[1];
   emacs_value x_test = args[2];
-  emacs_value y_out = args[3];
 
-  int problem_size = env->vec_size(env, y_train);
+  int train_size = env->vec_size(env, y_train);
   int features = env->vec_size(env, vref(env, x_train, 0));
+  int test_size = env->vec_size(env, x_test);
 
-  prob.l = problem_size;
-  prob.y = (double *) malloc(problem_size * sizeof(double));
-  prob.x = (struct svm_node **) malloc(problem_size * sizeof(struct svm_node *));
-  x_space = (struct svm_node *) malloc(problem_size * (features + 1) * sizeof(struct svm_node));
+  emacs_value y_out = make_vector(env, test_size, 0.0);
+
+  prob.l = train_size;
+  prob.y = (double *) malloc(train_size * sizeof(double));
+  prob.x = (struct svm_node **) malloc(train_size * sizeof(struct svm_node *));
+  x_space = (struct svm_node *) malloc(train_size * (features + 1) * sizeof(struct svm_node));
 
   for (int i = 0; i < prob.l; i++)
     {
@@ -106,7 +116,7 @@ Fgo (emacs_env *env, ptrdiff_t n, emacs_value args[], void *data)
     env->vec_set(env, y_out, i, env->make_float(env, svm_predict(model, x_space_test)));
   }
 
-  return env->make_string(env, "done", 4);
+  return y_out;
 }
 
 static void
@@ -136,7 +146,7 @@ emacs_module_init (struct emacs_runtime *ert)
   emacs_value vfun = env->make_function(env, 0, 0, Flibsvm_version, "Return the version of libsvm", NULL);
   bind_function(env, "esvm--libsvm-version", vfun);
 
-  emacs_value gfun = env->make_function(env, 4, 4, Fgo, "Go go go", NULL);
+  emacs_value gfun = env->make_function(env, 3, 3, Fgo, "Go go go", NULL);
   bind_function(env, "esvm--go", gfun);
 
   provide(env, "esvm-core");

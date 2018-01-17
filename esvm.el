@@ -35,10 +35,10 @@
   "Return version information"
   (format "esvm using LibSVM version %s" (esvm--libsvm-version)))
 
-(defun esvm-go (x_train y_test x_test y_out)
+(defun esvm-go (x_train y_test x_test)
   "Train and test svm on the given vectors. Do some preprocessing and
 pass the vectors to the c function."
-  ())
+  (esvm--go))
 
 (provide 'esvm)
 
