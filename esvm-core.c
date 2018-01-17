@@ -75,10 +75,11 @@ Fgo (emacs_env *env, ptrdiff_t n, emacs_value args[], void *data)
   for (int i = 0; i < problem.l; i++)
     {
       problem.x[i] = &train_nodes[j];
-      for (int k = 0; k < n_features; k++, j++) {
-        train_nodes[j].index = k + 1;
-        train_nodes[j].value = vref2_f(env, x_train, i, k);
-      }
+      for (int k = 0; k < n_features; k++, j++)
+        {
+          train_nodes[j].index = k + 1;
+          train_nodes[j].value = vref2_f(env, x_train, i, k);
+        }
       train_nodes[j].index = -1;
       train_nodes[j].value = 0;
       j++;
