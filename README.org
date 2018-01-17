@@ -1,0 +1,3 @@
+#+TITLE: esvm
+
+[[https://github.com/cjlin1/libsvm][Libsvm]] bindings for Emacs lisp. Learning to use dynamic modules in Emacs >=25.
