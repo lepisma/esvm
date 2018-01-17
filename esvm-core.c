@@ -103,7 +103,7 @@ Fgo (emacs_env *env, ptrdiff_t n, emacs_value args[], void *data)
     }
     x_space_test[j].index = -1;
     x_space_test[j].value = 0;
-    env->vec_set(env, y_out, j, env->make_float(env, svm_predict(model, x_space_test)));
+    env->vec_set(env, y_out, i, env->make_float(env, svm_predict(model, x_space_test)));
   }
 
   return env->make_string(env, "done", 4);
