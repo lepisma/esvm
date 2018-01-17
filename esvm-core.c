@@ -74,19 +74,19 @@ Fgo (emacs_env *env, ptrdiff_t n, emacs_value args[], void *data)
     }
 
   params.svm_type = C_SVC;
-	params.kernel_type = RBF;
-	params.degree = 3;
-	params.gamma = 0;
-	params.coef0 = 0;
-	params.nu = 0.5;
-	params.cache_size = 100;
-	params.C = 1;
-	params.eps = 1e-3;
-	params.p = 0.1;
-	params.shrinking = 1;
-	params.probability = 0;
-	params.nr_weight = 0;
-	params.weight_label = NULL;
+  params.kernel_type = RBF;
+  params.degree = 3;
+  params.gamma = 0;
+  params.coef0 = 0;
+  params.nu = 0.5;
+  params.cache_size = 100;
+  params.C = 1;
+  params.eps = 1e-3;
+  params.p = 0.1;
+  params.shrinking = 1;
+  params.probability = 0;
+  params.nr_weight = 0;
+  params.weight_label = NULL;
   params.weight = NULL;
 
   model = svm_train(&prob, &params);
@@ -94,16 +94,19 @@ Fgo (emacs_env *env, ptrdiff_t n, emacs_value args[], void *data)
   // Predict
   struct svm_node *x_space_test = (struct svm_node *) malloc((features + 1) * sizeof(struct svm_node));
 
-  int i;
-  for (i = 0; i < features; i++) {
-    x_space_test[i].index = i + 1;
-    x_space_test[i].value = vref2_f(env, x_test, 0, i);
+  int ntest = env->vec_size(env, y_out);
+  for (int i = 0; i < ntest; i++) {
+    int j;
+    for (j = 0; j < features; j++) {
+      x_space_test[j].index = j + 1;
+      x_space_test[j].value = vref2_f(env, x_test, i, j);
+    }
+    x_space_test[j].index = -1;
+    x_space_test[j].value = 0;
+    env->vec_set(env, y_out, j, env->make_float(env, svm_predict(model, x_space_test)));
   }
-  x_space_test[i].index = -1;
-  x_space_test[i].value = 0;
 
-  env->vec_set(env, y_out, 0, env->make_float(env, svm_predict(model, x_space_test)));
-  return env->make_integer(env, 0);
+  return env->make_string(env, "done", 4);
 }
 
 static void
