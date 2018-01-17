@@ -54,9 +54,9 @@ Fgo (emacs_env *env, ptrdiff_t n, emacs_value args[], void *data)
   emacs_value y_train = args[1];
   emacs_value x_test = args[2];
 
-  int train_size = env->vec_size(env, y_train);
-  int features = env->vec_size(env, vref(env, x_train, 0));
+  int train_size = env->vec_size(env, x_train);
   int test_size = env->vec_size(env, x_test);
+  int features = env->vec_size(env, vref(env, x_train, 0));
 
   emacs_value y_out = make_vector(env, test_size, 0.0);
 
@@ -67,7 +67,7 @@ Fgo (emacs_env *env, ptrdiff_t n, emacs_value args[], void *data)
 
   for (int i = 0; i < prob.l; i++)
     {
-      prob.y[i] = vref_f(env, y_train, 0);
+      prob.y[i] = vref_f(env, y_train, i);
     }
 
   int j = 0;
@@ -86,7 +86,7 @@ Fgo (emacs_env *env, ptrdiff_t n, emacs_value args[], void *data)
   params.svm_type = C_SVC;
   params.kernel_type = RBF;
   params.degree = 3;
-  params.gamma = 0;
+  params.gamma = 0.001;
   params.coef0 = 0;
   params.nu = 0.5;
   params.cache_size = 100;
@@ -102,19 +102,19 @@ Fgo (emacs_env *env, ptrdiff_t n, emacs_value args[], void *data)
   model = svm_train(&prob, &params);
 
   // Predict
+  j = 0;
   struct svm_node *x_space_test = (struct svm_node *) malloc((features + 1) * sizeof(struct svm_node));
-
-  int ntest = env->vec_size(env, y_out);
-  for (int i = 0; i < ntest; i++) {
-    int j;
-    for (j = 0; j < features; j++) {
-      x_space_test[j].index = j + 1;
-      x_space_test[j].value = vref2_f(env, x_test, i, j);
+  for (int i = 0; i < test_size; i++)
+    {
+      for (j = 0; j < features; ++j)
+        {
+          x_space_test[j].index = j + 1;
+          x_space_test[j].value = vref2_f(env, x_test, i, j);
+        }
+      x_space_test[j].index = -1;
+      x_space_test[j].value = 0;
+      env->vec_set(env, y_out, i, env->make_float(env, svm_predict(model, x_space_test)));
     }
-    x_space_test[j].index = -1;
-    x_space_test[j].value = 0;
-    env->vec_set(env, y_out, i, env->make_float(env, svm_predict(model, x_space_test)));
-  }
 
   return y_out;
 }
