@@ -45,7 +45,7 @@ make_vector (emacs_env *env, int len, double init)
 static void
 fin_model (void *model)
 {
-  // TODO: Free model memory
+  free(model);
 }
 
 static emacs_value
@@ -131,6 +131,8 @@ Fpredict (emacs_env *env, ptrdiff_t n, emacs_value args[], void *data)
       test_nodes[j].value = 0;
       env->vec_set(env, y_out, i, env->make_float(env, svm_predict(model, test_nodes)));
     }
+
+  free(test_nodes);
 
   return y_out;
 }
